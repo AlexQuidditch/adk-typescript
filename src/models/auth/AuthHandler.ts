@@ -1,5 +1,5 @@
-import { AuthConfig } from './AuthConfig';
-import { AuthCredential } from './AuthCredential';
+import type { AuthConfig } from './AuthConfig'
+import type { AuthCredential } from './AuthCredential'
 
 /**
  * Handler for authentication in tools
@@ -8,48 +8,44 @@ export class AuthHandler {
   /**
    * The authentication configuration
    */
-  authConfig: AuthConfig;
-  
+  public authConfig: AuthConfig
+
   /**
    * The authentication credential
    */
-  credential?: AuthCredential;
-  
+  public credential?: AuthCredential
+
   /**
    * Constructor for AuthHandler
    */
-  constructor(config: {
-    authConfig: AuthConfig;
-    credential?: AuthCredential;
+  public constructor(config: {
+    authConfig: AuthConfig
+    credential?: AuthCredential
   }) {
-    this.authConfig = config.authConfig;
-    this.credential = config.credential;
+    this.authConfig = config.authConfig
+    this.credential = config.credential
   }
-  
+
   /**
    * Gets the authentication token
    */
-  getToken(): string | undefined {
-    return this.credential?.getToken();
+  public getToken(): string | undefined {
+    return this.credential?.getToken()
   }
-  
+
   /**
    * Gets headers for HTTP requests
    */
-  getHeaders(): Record<string, string> {
-    if (!this.credential) {
-      return {};
-    }
-    
-    return this.credential.getHeaders(this.authConfig);
+  public getHeaders(): Record<string, string> {
+    return this.credential?.getHeaders(this.authConfig) || {}
   }
-  
+
   /**
-   * Refreshes the token if necessary
+   * Refreshes the token if possible
    */
-  async refreshToken(): Promise<void> {
+  public async refreshToken(): Promise<void> {
     if (this.credential?.canRefresh()) {
-      await this.credential.refresh();
+      await this.credential.refresh()
     }
   }
-} 
+}

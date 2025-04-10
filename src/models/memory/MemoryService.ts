@@ -1,4 +1,4 @@
-import { Session } from './Session';
+import type { Session } from './Session'
 
 /**
  * Represents a single memory retrieval result
@@ -7,17 +7,17 @@ export interface MemoryResult {
   /**
    * The session ID associated with the memory
    */
-  sessionId: string;
-  
+  sessionId: string
+
   /**
    * Array of events/messages from the session
    */
-  events: any[];
-  
+  events: any[]
+
   /**
    * Score indicating relevance to query (0-1)
    */
-  relevanceScore?: number;
+  relevanceScore?: number
 }
 
 /**
@@ -27,7 +27,7 @@ export interface SearchMemoryResponse {
   /**
    * List of memory results matching the search query
    */
-  memories: MemoryResult[];
+  memories: MemoryResult[]
 }
 
 /**
@@ -37,22 +37,22 @@ export interface SearchMemoryOptions {
   /**
    * Session ID to search within (null for all sessions)
    */
-  sessionId?: string;
-  
+  sessionId?: string
+
   /**
    * Maximum number of results to return
    */
-  limit?: number;
-  
+  limit?: number
+
   /**
    * Minimum relevance score (0-1)
    */
-  threshold?: number;
-  
+  threshold?: number
+
   /**
    * Additional filter criteria
    */
-  filter?: Record<string, any>;
+  filter?: Record<string, any>
 }
 
 /**
@@ -63,13 +63,13 @@ export interface BaseMemoryService {
    * Adds a session to the memory service
    * @param session The session to add
    */
-  addSessionToMemory(session: Session): Promise<void>;
-  
+  addSessionToMemory: (session: Session) => Promise<void>
+
   /**
    * Searches memory for relevant information
    * @param query The search query
    * @param options Search options
    * @returns Search results
    */
-  searchMemory(query: string, options?: SearchMemoryOptions): Promise<SearchMemoryResponse>;
-} 
+  searchMemory: (query: string, options?: SearchMemoryOptions) => Promise<SearchMemoryResponse>
+}

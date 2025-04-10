@@ -1,7 +1,15 @@
-import { BaseLLM } from '../../BaseLLM';
-import { LLMRequest, Message, MessageRole } from '../../../models/request/LLMRequest';
-import { LLMResponse } from '../../../models/response/LLMResponse';
-import { VertexAI, GenerativeModel } from '@google-cloud/vertexai';
+import { Buffer } from 'node:buffer'
+import process from 'node:process'
+
+import type { BaseLLMConnection } from '@adk/llm/BaseLLMConnection'
+import type { GenerativeModel } from '@google-cloud/vertexai'
+
+import { VertexAI } from '@google-cloud/vertexai'
+
+import type { LLMRequest, Message, MessageRole } from '../../../models/request/LLMRequest'
+
+import { LLMResponse } from '../../../models/response/LLMResponse'
+import { BaseLLM } from '../../BaseLLM'
 
 /**
  * Google Gemini LLM configuration
@@ -10,13 +18,13 @@ export interface GoogleLLMConfig {
   /**
    * Google Cloud Project ID (can be provided via GOOGLE_CLOUD_PROJECT env var)
    */
-  projectId?: string;
-  
+  projectId?: string
+
   /**
    * Google Cloud location (can be provided via GOOGLE_CLOUD_LOCATION env var)
    */
-  location?: string;
-  
+  location?: string
+
   /**
    * Default model parameters
    */
@@ -24,156 +32,164 @@ export interface GoogleLLMConfig {
     /**
      * Temperature for generation
      */
-    temperature?: number;
-    
+    temperature?: number
+
     /**
      * Top-p for generation
      */
-    top_p?: number;
-    
+    top_p?: number
+
     /**
      * Maximum tokens to generate
      */
-    maxOutputTokens?: number;
-  };
+    maxOutputTokens?: number
+  }
 }
 
 /**
  * Google Gemini LLM implementation
  */
 export class GoogleLLM extends BaseLLM {
+  public connect(llmRequest: LLMRequest, stream?: boolean): BaseLLMConnection {
+    throw new Error('Method not implemented.')
+  }
+
+  /**
+
   /**
    * Vertex AI instance
    */
-  private vertex: VertexAI;
-  
+  private vertex: VertexAI
+
   /**
    * Generative model instance
    */
-  private generativeModel: GenerativeModel;
-  
+  private generativeModel: GenerativeModel
+
   /**
    * Default parameters for requests
    */
-  private defaultParams: Record<string, any>;
-  
+  private defaultParams: Record<string, any>
+
   /**
    * Constructor for GoogleLLM
    */
-  constructor(model: string, config?: GoogleLLMConfig) {
-    super(model);
-    
+  public constructor(model: string, config?: GoogleLLMConfig) {
+    super(model)
+
     // Get configuration from environment or passed config
-    const projectId = config?.projectId || process.env.GOOGLE_CLOUD_PROJECT;
-    const location = config?.location || process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
-    
+    const projectId = config?.projectId || process.env.GOOGLE_CLOUD_PROJECT
+    const location = config?.location || process.env.GOOGLE_CLOUD_LOCATION || 'us-central1'
+
     if (!projectId) {
-      throw new Error('Google Cloud Project ID is required. Provide via config or GOOGLE_CLOUD_PROJECT env var.');
+      throw new Error('Google Cloud Project ID is required. Provide via config or GOOGLE_CLOUD_PROJECT env var.')
     }
-    
+
     // Create Vertex AI instance
-    this.vertex = new VertexAI({ project: projectId, location });
-    
+    this.vertex = new VertexAI({ project: projectId, location })
+
     // Create generative model instance
-    this.generativeModel = this.vertex.getGenerativeModel({ model: this.model });
-    
+    this.generativeModel = this.vertex.getGenerativeModel({ model: this.model })
+
     // Store default parameters
     this.defaultParams = {
       temperature: config?.defaultParams?.temperature ?? 0.7,
       topP: config?.defaultParams?.top_p ?? 1,
-      maxOutputTokens: config?.defaultParams?.maxOutputTokens ?? 1024
-    };
+      maxOutputTokens: config?.defaultParams?.maxOutputTokens ?? 1024,
+    }
   }
-  
+
   /**
    * Returns a list of supported models in regex for LLMRegistry
    */
-  static supportedModels(): string[] {
+  public static supportedModels(): string[] {
     return [
       // Gemini models
       'gemini-.*',
-    ];
+    ]
   }
-  
+
   /**
    * Convert a message to Google Vertex AI format
    */
   private convertMessage(message: Message): any {
     // Base content as empty string, will be populated based on message type
-    let content: any = '';
-    
+    let content: any = ''
+
     // Handle multimodal content
     if (Array.isArray(message.content)) {
       // Create parts array for multimodal content
-      const parts: any[] = [];
-      
+      const parts: any[] = []
+
       for (const part of message.content) {
         if (part.type === 'text') {
-          parts.push({ text: part.text });
-        } else if (part.type === 'image') {
+          parts.push({ text: part.text })
+        }
+        else if (part.type === 'image') {
           parts.push({
             inlineData: {
-              mimeType: typeof part.image_url === 'object' && 'mime_type' in part.image_url 
-                ? part.image_url.mime_type 
+              mimeType: typeof part.image_url === 'object' && 'mime_type' in part.image_url
+                ? part.image_url.mime_type
                 : 'image/jpeg',
-              data: part.image_url.url.startsWith('data:') 
+              data: part.image_url.url.startsWith('data:')
                 ? part.image_url.url.split(',')[1] // Handle base64 data URLs
-                : Buffer.from(part.image_url.url).toString('base64') // Convert URL to base64
-            }
-          });
+                : Buffer.from(part.image_url.url).toString('base64'), // Convert URL to base64
+            },
+          })
         }
       }
-      
-      content = parts;
-    } else if (typeof message.content === 'string') {
-      content = message.content;
+
+      content = parts
     }
-    
+    else if (typeof message.content === 'string') {
+      content = message.content
+    }
+
     // Map to Google format
-    const role = this.mapRole(message.role);
-    
+    const role = this.mapRole(message.role)
+
     return {
       role,
-      parts: Array.isArray(content) ? content : [{ text: content }]
-    };
+      parts: Array.isArray(content) ? content : [{ text: content }],
+    }
   }
-  
+
   /**
    * Map ADK role to Google role
    */
   private mapRole(role: MessageRole): string {
     switch (role) {
       case 'user':
-        return 'user';
+        return 'user'
       case 'assistant':
       case 'function':
       case 'tool':
       case 'model':
-        return 'model';
+        return 'model'
       case 'system':
-        return 'system';
+        return 'system'
       default:
-        return 'user';
+        return 'user'
     }
   }
-  
+
   /**
    * Convert functions to Google function declarations
    */
   private convertFunctionsToTools(functions: any[]): any[] {
     if (!functions || functions.length === 0) {
-      return [];
+      return []
     }
-    
+
     return functions.map(func => ({
       functionDeclarations: [{
         name: func.name,
         description: func.description,
-        parameters: func.parameters
-      }]
-    }));
+        parameters: func.parameters,
+      }],
+    }))
   }
-  
+
   /**
    * Convert Google response to LLMResponse
    */
@@ -181,102 +197,104 @@ export class GoogleLLM extends BaseLLM {
     // Create base response
     const result = new LLMResponse({
       role: 'assistant',
-      content: null
-    });
-    
+      content: null,
+    })
+
     // Extract text content
     if (response?.candidates?.[0]?.content?.parts?.[0]?.text) {
-      result.content = response.candidates[0].content.parts[0].text;
+      result.content = response.candidates[0].content.parts[0].text
     }
-    
+
     // Handle function calls
     if (response?.candidates?.[0]?.content?.parts?.[0]?.functionCall) {
-      const functionCall = response.candidates[0].content.parts[0].functionCall;
-      
+      const functionCall = response.candidates[0].content.parts[0].functionCall
+
       result.function_call = {
         name: functionCall.name,
-        arguments: JSON.stringify(functionCall.args || {})
-      };
-      
+        arguments: JSON.stringify(functionCall.args || {}),
+      }
+
       // Set tool_calls array too for newer format
       result.tool_calls = [{
         id: `google-${Date.now()}`,
         function: {
           name: functionCall.name,
-          arguments: JSON.stringify(functionCall.args || {})
-        }
-      }];
+          arguments: JSON.stringify(functionCall.args || {}),
+        },
+      }]
     }
-    
-    return result;
+
+    return result
   }
-  
+
   /**
    * Generates content from the given request
    */
-  async *generateContentAsync(
+  public async* generateContentAsync(
     llmRequest: LLMRequest,
-    stream: boolean = false
+    stream: boolean = false,
   ): AsyncGenerator<LLMResponse, void, unknown> {
     try {
       // Convert messages to Google format
-      const messages = llmRequest.messages.map(msg => this.convertMessage(msg));
-      
+      const messages = llmRequest.messages.map(msg => this.convertMessage(msg))
+
       // Prepare generation config
       const generationConfig = {
         temperature: llmRequest.config.temperature ?? this.defaultParams.temperature,
         topP: llmRequest.config.top_p ?? this.defaultParams.topP,
-        maxOutputTokens: llmRequest.config.max_tokens ?? this.defaultParams.maxOutputTokens
-      };
-      
+        maxOutputTokens: llmRequest.config.max_tokens ?? this.defaultParams.maxOutputTokens,
+      }
+
       // Prepare tools if specified
-      const tools = llmRequest.config.functions 
+      const tools = llmRequest.config.functions
         ? this.convertFunctionsToTools(llmRequest.config.functions)
-        : undefined;
-      
+        : undefined
+
       // Prepare chat request
       const requestOptions: any = {
         contents: messages,
-        generationConfig
-      };
-      
+        generationConfig,
+      }
+
       // Add tools if available
       if (tools && tools.length > 0) {
-        requestOptions.tools = tools;
+        requestOptions.tools = tools
       }
-      
+
       if (stream) {
         // Handle streaming
-        const streamingResult = await this.generativeModel.generateContentStream(requestOptions);
-        
+        const streamingResult = await this.generativeModel.generateContentStream(requestOptions)
+
         for await (const chunk of streamingResult.stream) {
-          const partialText = chunk.candidates[0]?.content?.parts[0]?.text || '';
-          
+          const partialText = chunk.candidates?.[0]?.content?.parts?.[0]?.text || ''
+
           // Create partial response
           const partialResponse = new LLMResponse({
             content: partialText,
             role: 'assistant',
-            is_partial: true
-          });
-          
-          yield partialResponse;
+            is_partial: true,
+          })
+
+          yield partialResponse
         }
-        
+
         // Final response handling for function calls which may only be in the final response
-        const finalResponse = await streamingResult.response;
-        const hasToolCall = finalResponse?.candidates?.[0]?.content?.parts?.[0]?.functionCall;
-        
+        const finalResponse = await streamingResult.response
+        const hasToolCall = finalResponse?.candidates?.[0]?.content?.parts?.[0]?.functionCall
+
         if (hasToolCall) {
-          yield this.convertResponse(finalResponse);
+          yield this.convertResponse(finalResponse)
         }
-      } else {
-        // Non-streaming request
-        const response = await this.generativeModel.generateContent(requestOptions);
-        yield this.convertResponse(response);
       }
-    } catch (error) {
-      console.error('Error generating content from Google Gemini:', error);
-      throw error;
+      else {
+        // Non-streaming request
+        const response = await this.generativeModel.generateContent(requestOptions)
+        yield this.convertResponse(response)
+      }
+    }
+    catch (error) {
+      console.error('Error generating content from Google Gemini:', error)
+      throw error
     }
   }
-} 
+}

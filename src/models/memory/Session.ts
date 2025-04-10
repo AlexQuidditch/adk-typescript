@@ -1,15 +1,18 @@
-import { Message } from '../request/LLMRequest';
+import type { Message } from '../request/LLMRequest'
 
 /**
  * Represents the state of a session
  */
 export class SessionState {
-  private state: Map<string, any>;
-  private dirty: Set<string>;
+  private state: Map<string, any>
+  private dirty: Set<string>
 
-  constructor() {
-    this.state = new Map<string, any>();
-    this.dirty = new Set<string>();
+  /**
+   * Constructor for SessionState
+   */
+  public constructor() {
+    this.state = new Map<string, any>()
+    this.dirty = new Set<string>()
   }
 
   /**
@@ -17,9 +20,9 @@ export class SessionState {
    * @param key The key to set
    * @param value The value to set
    */
-  set(key: string, value: any): void {
-    this.state.set(key, value);
-    this.dirty.add(key);
+  public set(key: string, value: any): void {
+    this.state.set(key, value)
+    this.dirty.add(key)
   }
 
   /**
@@ -27,8 +30,8 @@ export class SessionState {
    * @param key The key to get
    * @returns The value or undefined if not present
    */
-  get<T>(key: string): T | undefined {
-    return this.state.get(key) as T | undefined;
+  public get<T>(key: string): T | undefined {
+    return this.state.get(key) as T | undefined
   }
 
   /**
@@ -36,8 +39,8 @@ export class SessionState {
    * @param key The key to check
    * @returns Whether the key exists
    */
-  has(key: string): boolean {
-    return this.state.has(key);
+  public has(key: string): boolean {
+    return this.state.has(key)
   }
 
   /**
@@ -45,51 +48,51 @@ export class SessionState {
    * @param key The key to delete
    * @returns Whether the key was deleted
    */
-  delete(key: string): boolean {
+  public delete(key: string): boolean {
     if (this.state.has(key)) {
-      this.state.delete(key);
-      this.dirty.add(key);
-      return true;
+      this.state.delete(key)
+      this.dirty.add(key)
+      return true
     }
-    return false;
+    return false
   }
 
   /**
    * Checks if state has changed since last save
    * @returns Whether the state has been modified
    */
-  hasDelta(): boolean {
-    return this.dirty.size > 0;
+  public hasDelta(): boolean {
+    return this.dirty.size > 0
   }
 
   /**
    * Clears the dirty state
    */
-  clearDelta(): void {
-    this.dirty.clear();
+  public clearDelta(): void {
+    this.dirty.clear()
   }
 
   /**
    * Converts the state to a plain object
    */
-  toObject(): Record<string, any> {
-    const result: Record<string, any> = {};
+  public toObject(): Record<string, any> {
+    const result: Record<string, any> = {}
     this.state.forEach((value, key) => {
-      result[key] = value;
-    });
-    return result;
+      result[key] = value
+    })
+    return result
   }
 
   /**
    * Creates a state from a plain object
    * @param obj The object to load
    */
-  static fromObject(obj: Record<string, any>): SessionState {
-    const state = new SessionState();
+  public static fromObject(obj: Record<string, any>): SessionState {
+    const state = new SessionState()
     Object.entries(obj).forEach(([key, value]) => {
-      state.state.set(key, value);
-    });
-    return state;
+      state.state.set(key, value)
+    })
+    return state
   }
 }
 
@@ -100,37 +103,37 @@ export interface Session {
   /**
    * Unique session identifier
    */
-  id: string;
-  
+  id: string
+
   /**
    * User identifier associated with the session
    */
-  userId: string;
-  
+  userId: string
+
   /**
    * Conversation history
    */
-  messages: Message[];
-  
+  messages: Message[]
+
   /**
    * Additional session metadata
    */
-  metadata: Record<string, any>;
-  
+  metadata: Record<string, any>
+
   /**
    * Session creation timestamp
    */
-  createdAt: Date;
-  
+  createdAt: Date
+
   /**
    * Last update timestamp
    */
-  updatedAt: Date;
-  
+  updatedAt: Date
+
   /**
    * Session state for storing arbitrary data
    */
-  state: SessionState;
+  state: SessionState
 }
 
 /**
@@ -140,20 +143,20 @@ export interface ListSessionOptions {
   /**
    * Maximum number of sessions to return
    */
-  limit?: number;
-  
+  limit?: number
+
   /**
    * Only include sessions created after this time
    */
-  createdAfter?: Date;
-  
+  createdAfter?: Date
+
   /**
    * Only include sessions updated after this time
    */
-  updatedAfter?: Date;
-  
+  updatedAfter?: Date
+
   /**
    * Filter sessions by metadata
    */
-  metadataFilter?: Record<string, any>;
-} 
+  metadataFilter?: Record<string, any>
+}

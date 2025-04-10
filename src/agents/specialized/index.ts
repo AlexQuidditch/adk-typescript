@@ -3,16 +3,16 @@
  */
 
 // Standard Agent (LLM-based)
-export * from './Agent';
-
-// Sequential execution agent
-export * from './SequentialAgent';
-
-// Parallel execution agent
-export * from './ParallelAgent';
-
-// Loop execution agent
-export * from './LoopAgent';
+export * from './Agent'
 
 // LangGraph workflow agent
-export * from './LangGraphAgent'; 
+export * from './LangGraphAgent'
+
+// Loop execution agent
+export * from './LoopAgent'
+
+// Parallel execution agent
+export * from './ParallelAgent'
+
+// Sequential execution agent
+export * from './SequentialAgent'

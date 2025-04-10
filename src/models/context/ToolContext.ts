@@ -1,5 +1,5 @@
-import { InvocationContext } from './InvocationContext';
-import { AuthHandler } from '../auth/AuthHandler';
+import type { AuthHandler } from '../auth/AuthHandler'
+import type { InvocationContext } from './InvocationContext'
 
 /**
  * Context for tool execution
@@ -8,44 +8,44 @@ export class ToolContext {
   /**
    * The parent invocation context
    */
-  invocationContext: InvocationContext;
-  
+  public invocationContext: InvocationContext
+
   /**
    * Authentication handler for the tool
    */
-  auth?: AuthHandler;
-  
+  public auth?: AuthHandler
+
   /**
    * Additional parameters for the tool
    */
-  parameters: Record<string, any>;
-  
+  public parameters: Record<string, any>
+
   /**
    * Constructor for ToolContext
    */
-  constructor(options: {
-    invocationContext: InvocationContext;
-    auth?: AuthHandler;
-    parameters?: Record<string, any>;
+  public constructor(options: {
+    invocationContext: InvocationContext
+    auth?: AuthHandler
+    parameters?: Record<string, any>
   }) {
-    this.invocationContext = options.invocationContext;
-    this.auth = options.auth;
-    this.parameters = options.parameters || {};
+    this.invocationContext = options.invocationContext
+    this.auth = options.auth
+    this.parameters = options.parameters || {}
   }
-  
+
   /**
    * Gets a parameter value
    */
-  getParameter<T>(name: string, defaultValue?: T): T | undefined {
+  public getParameter<T>(name: string, defaultValue?: T): T | undefined {
     return (name in this.parameters)
       ? this.parameters[name] as T
-      : defaultValue;
+      : defaultValue
   }
-  
+
   /**
    * Sets a parameter value
    */
-  setParameter(name: string, value: any): void {
-    this.parameters[name] = value;
+  public setParameter(name: string, value: any): void {
+    this.parameters[name] = value
   }
-} 
+}

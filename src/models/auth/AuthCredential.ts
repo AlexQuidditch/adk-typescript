@@ -1,5 +1,7 @@
-import { AuthConfig } from './AuthConfig';
-import { ApiKeyScheme, HttpScheme, OAuth2Scheme } from './AuthScheme';
+import { Buffer } from 'node:buffer'
+
+import type { AuthConfig } from './AuthConfig'
+import type { ApiKeyScheme } from './AuthScheme'
 
 /**
  * Types of authentication credentials
@@ -9,7 +11,7 @@ export enum AuthCredentialType {
   BASIC = 'basic',
   BEARER = 'bearer',
   OAUTH2 = 'oauth2',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 /**
@@ -19,37 +21,37 @@ export abstract class AuthCredential {
   /**
    * Type of credential
    */
-  type: AuthCredentialType;
-  
+  public type: AuthCredentialType
+
   /**
    * Constructor for AuthCredential
    */
-  constructor(type: AuthCredentialType) {
-    this.type = type;
+  public constructor(type: AuthCredentialType) {
+    this.type = type
   }
-  
+
   /**
    * Gets the authentication token
    */
-  abstract getToken(): string | undefined;
-  
+  public abstract getToken(): string | undefined
+
   /**
    * Gets headers for HTTP requests
    */
-  abstract getHeaders(config: AuthConfig): Record<string, string>;
-  
+  public abstract getHeaders(config: AuthConfig): Record<string, string>
+
   /**
    * Whether the token can be refreshed
    */
-  canRefresh(): boolean {
-    return false;
+  public canRefresh(): boolean {
+    return false
   }
-  
+
   /**
    * Refreshes the token
    */
-  async refresh(): Promise<void> {
-    throw new Error('Token refresh not supported for this credential type');
+  public async refresh(): Promise<void> {
+    throw new Error('Token refresh not supported for this credential type')
   }
 }
 
@@ -60,34 +62,34 @@ export class ApiKeyCredential extends AuthCredential {
   /**
    * The API key
    */
-  apiKey: string;
-  
+  public apiKey: string
+
   /**
    * Constructor for ApiKeyCredential
    */
-  constructor(apiKey: string) {
-    super(AuthCredentialType.API_KEY);
-    this.apiKey = apiKey;
+  public constructor(apiKey: string) {
+    super(AuthCredentialType.API_KEY)
+    this.apiKey = apiKey
   }
-  
+
   /**
    * Gets the API key as the token
    */
-  getToken(): string {
-    return this.apiKey;
+  public getToken(): string {
+    return this.apiKey
   }
-  
+
   /**
    * Gets headers for HTTP requests
    */
-  getHeaders(config: AuthConfig): Record<string, string> {
-    const scheme = config.authScheme as ApiKeyScheme;
-    
+  public getHeaders(config: AuthConfig): Record<string, string> {
+    const scheme = config.authScheme as ApiKeyScheme
+
     if (scheme.in === 'header') {
-      return { [scheme.name]: this.apiKey };
+      return { [scheme.name]: this.apiKey }
     }
-    
-    return {};
+
+    return {}
   }
 }
 
@@ -98,36 +100,36 @@ export class BasicAuthCredential extends AuthCredential {
   /**
    * The username
    */
-  username: string;
-  
+  public username: string
+
   /**
    * The password
    */
-  password: string;
-  
+  public password: string
+
   /**
    * Constructor for BasicAuthCredential
    */
-  constructor(username: string, password: string) {
-    super(AuthCredentialType.BASIC);
-    this.username = username;
-    this.password = password;
+  public constructor(username: string, password: string) {
+    super(AuthCredentialType.BASIC)
+    this.username = username
+    this.password = password
   }
-  
+
   /**
    * Gets the encoded basic auth token
    */
-  getToken(): string {
-    return Buffer.from(`${this.username}:${this.password}`).toString('base64');
+  public getToken(): string {
+    return Buffer.from(`${this.username}:${this.password}`).toString('base64')
   }
-  
+
   /**
    * Gets headers for HTTP requests
    */
-  getHeaders(): Record<string, string> {
+  public getHeaders(): Record<string, string> {
     return {
-      'Authorization': `Basic ${this.getToken()}`
-    };
+      Authorization: `Basic ${this.getToken()}`,
+    }
   }
 }
 
@@ -138,30 +140,30 @@ export class BearerTokenCredential extends AuthCredential {
   /**
    * The bearer token
    */
-  token: string;
-  
+  public token: string
+
   /**
    * Constructor for BearerTokenCredential
    */
-  constructor(token: string) {
-    super(AuthCredentialType.BEARER);
-    this.token = token;
+  public constructor(token: string) {
+    super(AuthCredentialType.BEARER)
+    this.token = token
   }
-  
+
   /**
    * Gets the bearer token
    */
-  getToken(): string {
-    return this.token;
+  public getToken(): string {
+    return this.token
   }
-  
+
   /**
    * Gets headers for HTTP requests
    */
-  getHeaders(): Record<string, string> {
+  public getHeaders(): Record<string, string> {
     return {
-      'Authorization': `Bearer ${this.token}`
-    };
+      Authorization: `Bearer ${this.token}`,
+    }
   }
 }
 
@@ -172,96 +174,96 @@ export class OAuth2Credential extends AuthCredential {
   /**
    * The access token
    */
-  accessToken: string;
-  
+  public accessToken: string
+
   /**
    * The refresh token
    */
-  refreshToken?: string;
-  
+  public refreshToken?: string
+
   /**
    * When the token expires
    */
-  expiresAt?: Date;
-  
+  public expiresAt?: Date
+
   /**
    * Function to refresh the token
    */
-  private refreshFunction?: (refreshToken: string) => Promise<{ accessToken: string, refreshToken?: string, expiresIn?: number }>;
-  
+  private refreshFunction?: (refreshToken: string) => Promise<{ accessToken: string, refreshToken?: string, expiresIn?: number }>
+
   /**
    * Constructor for OAuth2Credential
    */
-  constructor(config: {
-    accessToken: string;
-    refreshToken?: string;
-    expiresIn?: number;
-    refreshFunction?: (refreshToken: string) => Promise<{ accessToken: string, refreshToken?: string, expiresIn?: number }>;
+  public constructor(config: {
+    accessToken: string
+    refreshToken?: string
+    expiresIn?: number
+    refreshFunction?: (refreshToken: string) => Promise<{ accessToken: string, refreshToken?: string, expiresIn?: number }>
   }) {
-    super(AuthCredentialType.OAUTH2);
-    this.accessToken = config.accessToken;
-    this.refreshToken = config.refreshToken;
-    
+    super(AuthCredentialType.OAUTH2)
+    this.accessToken = config.accessToken
+    this.refreshToken = config.refreshToken
+
     if (config.expiresIn) {
-      this.expiresAt = new Date(Date.now() + config.expiresIn * 1000);
+      this.expiresAt = new Date(Date.now() + config.expiresIn * 1000)
     }
-    
-    this.refreshFunction = config.refreshFunction;
+
+    this.refreshFunction = config.refreshFunction
   }
-  
+
   /**
    * Gets the access token
    */
-  getToken(): string {
-    return this.accessToken;
+  public getToken(): string {
+    return this.accessToken
   }
-  
+
   /**
    * Gets headers for HTTP requests
    */
-  getHeaders(): Record<string, string> {
+  public getHeaders(): Record<string, string> {
     return {
-      'Authorization': `Bearer ${this.accessToken}`
-    };
+      Authorization: `Bearer ${this.accessToken}`,
+    }
   }
-  
+
   /**
    * Whether the token can be refreshed
    */
-  canRefresh(): boolean {
-    return !!this.refreshToken && !!this.refreshFunction;
+  public canRefresh(): boolean {
+    return !!this.refreshToken && !!this.refreshFunction
   }
-  
+
   /**
    * Whether the token is expired
    */
-  isExpired(): boolean {
+  public isExpired(): boolean {
     if (!this.expiresAt) {
-      return false;
+      return false
     }
-    
+
     // Consider it expired if it's less than 30 seconds from expiration
-    return this.expiresAt.getTime() - 30000 < Date.now();
+    return this.expiresAt.getTime() - 30000 < Date.now()
   }
-  
+
   /**
    * Refreshes the token
    */
-  async refresh(): Promise<void> {
+  public async refresh(): Promise<void> {
     if (!this.canRefresh()) {
-      throw new Error('Cannot refresh token: no refresh token or refresh function');
+      throw new Error('Cannot refresh token: no refresh token or refresh function')
     }
-    
-    const result = await this.refreshFunction!(this.refreshToken!);
-    
-    this.accessToken = result.accessToken;
-    
+
+    const result = await this.refreshFunction!(this.refreshToken!)
+
+    this.accessToken = result.accessToken
+
     if (result.refreshToken) {
-      this.refreshToken = result.refreshToken;
+      this.refreshToken = result.refreshToken
     }
-    
+
     if (result.expiresIn) {
-      this.expiresAt = new Date(Date.now() + result.expiresIn * 1000);
+      this.expiresAt = new Date(Date.now() + result.expiresIn * 1000)
     }
   }
-} 
+}

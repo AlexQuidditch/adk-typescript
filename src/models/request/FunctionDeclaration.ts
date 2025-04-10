@@ -2,18 +2,18 @@
  * JSON Schema type for function parameters
  */
 export interface JSONSchema {
-  type: string;
-  properties?: Record<string, JSONSchema>;
-  items?: JSONSchema;
-  required?: string[];
-  enum?: string[];
-  description?: string;
-  format?: string;
-  pattern?: string;
-  minimum?: number;
-  maximum?: number;
-  default?: any;
-  [key: string]: any;
+  type: string
+  properties?: Record<string, JSONSchema>
+  items?: JSONSchema
+  required?: string[]
+  enum?: string[]
+  description?: string
+  format?: string
+  pattern?: string
+  minimum?: number
+  maximum?: number
+  default?: any
+  [key: string]: any
 }
 
 /**
@@ -23,15 +23,15 @@ export interface FunctionDeclaration {
   /**
    * Name of the function
    */
-  name: string;
-  
+  name: string
+
   /**
    * Description of what the function does
    */
-  description: string;
-  
+  description: string
+
   /**
    * Parameters schema in JSON Schema format
    */
-  parameters: JSONSchema;
-} 
+  parameters: JSONSchema
+}

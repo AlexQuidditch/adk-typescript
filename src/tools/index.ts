@@ -1,5 +1,5 @@
 // Export the base tool
-export { BaseTool } from './base/BaseTool';
+export { BaseTool } from './base/BaseTool'
 
 // Export common tools
-export { GoogleSearch } from './common/GoogleSearch'; 
+export { GoogleSearch } from './common/GoogleSearch'
