@@ -1,78 +1,80 @@
-import { FunctionDeclaration } from './FunctionDeclaration';
+import type { LLMResponse } from '../response/LLMResponse'
+import type { FunctionDeclaration } from './FunctionDeclaration'
 
 /**
  * Message role types for conversation history
  */
-export type MessageRole = 'user' | 'assistant' | 'system' | 'function' | 'tool' | 'model';
+export type MessageRole = 'user' | 'assistant' | 'system' | 'function' | 'tool' | 'model'
 
 /**
  * Text content type
  */
 export interface TextContent {
-  type: 'text';
-  text: string;
+  type: 'text'
+  text: string
 }
 
 /**
  * Image content type
  */
 export interface ImageContent {
-  type: 'image';
+  type: 'image'
   image_url: {
-    url: string;
-  };
+    url: string
+  }
 }
 
 /**
  * Message content types
  */
-export type MessageContent = string | TextContent | ImageContent | Array<TextContent | ImageContent>;
+export type MessageContent = string | TextContent | ImageContent | Array<TextContent | ImageContent>
 
 /**
  * Represents a message in the conversation
  */
 export interface Message {
-  role: MessageRole;
-  content: MessageContent;
-  name?: string;
-  function_call?: {
-    name: string;
-    arguments: string;
-  };
-  tool_call_id?: string;
+  role: MessageRole
+  content: MessageContent
+  name?: string
+  function_call?: LLMResponse['function_call']
+  tool_call_id?: string
+  tool_calls?: LLMResponse['tool_calls']
 }
 
 /**
  * Configuration for LLM requests
  */
 export interface LLMRequestConfig {
-  temperature?: number;
-  max_tokens?: number;
-  top_p?: number;
-  frequency_penalty?: number;
-  presence_penalty?: number;
-  functions?: FunctionDeclaration[];
+  temperature?: number
+  max_tokens?: number
+  top_p?: number
+  frequency_penalty?: number
+  presence_penalty?: number
+  functions?: FunctionDeclaration[]
 }
 
 /**
  * Represents a request to an LLM
  */
 export class LLMRequest {
-  /** 
+  /**
    * The conversation history
    */
-  messages: Message[];
-  
+  public messages: Message[]
+
   /**
    * LLM configuration parameters
    */
-  config: LLMRequestConfig;
+  public config: LLMRequestConfig
 
-  constructor(data: {
-    messages: Message[];
-    config?: LLMRequestConfig;
+  /**
+   * Constructor for LLMRequest
+   */
+  public constructor(data: {
+    messages: Message[]
+    config?: LLMRequestConfig
   }) {
-    this.messages = data.messages;
-    this.config = data.config || {};
+    this.messages = data.messages
+    this.config = data.config || {}
   }
-} 
+}
